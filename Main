@@ -1,0 +1,369 @@
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+ 
+public class Main {
+//This is an open source basic algorithm for Conway's Game Of Life.I am not a professional of coding.So this algorithm might have
+//some issues and "might be better if..."'s.But it is a short and probably the most simple algorithm for game of life out there.
+//And it implies every rule of game of life then perfectly displays it.For deeply understanding how this algorithm works,
+//you can check explanations.	
+	
+//-You can go random	
+
+//-You can go by drawing
+
+//-You are free to choose pixel size
+	
+//-You are free to choose iteration speed
+	
+//-You are free to play with the numbers and rules
+	
+//Github.com/hakanpolatovic
+//Behance.net/hakanpolatovic
+//Instagram/hakanpolatovic
+
+
+	public static void main(String[] args) {
+		
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //For Getting user's screen resolution
+		JFrame frame = new JFrame("Game Of Life");	//New Frame	
+		int width = (int) screenSize.getWidth();	//Getting user's screen width
+		int height = (int) screenSize.getHeight();	//Getting user's screen height
+	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //Frame Settings
+	    frame.setLocationRelativeTo(null);	//Frame settings
+	    frame.setSize(width, height);	//Frame size settings
+	    frame.setLocationByPlatform( true );	//Frame settings
+	  	BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB); //This image will be our grid
+	    width= width-10; //Subtracting 10 px to avoid any problems
+	    height=height-10; //Subtracting 10 px to avoid any problems
+	    ImageIcon icon = new ImageIcon( image ); //Making icon from image
+	    JLabel field = new JLabel(icon);	//Adding that icon to Jlabel called field
+	    frame.add(field); //Adding field to frame
+	    Generation(width,height,frame,image,field); //Initials are done,so it's time to set game's initial conditions
+	    
+		}
+
+
+	public static void Generation(int width,int height, JFrame frame, BufferedImage image, 
+			JLabel field) {
+	    Color mywhite = new Color (255,255,255,0);	//Defining colors
+	    Color myblack = new Color (0,0,0,255);	//Defining colors
+	    int black = myblack.getRGB(); //Defining colors
+	    int white = mywhite.getRGB(); //Defining colors
+	    Scanner scan=new Scanner(System.in);
+	    System.out.println("Press 0 to random mode,1 to draw mode");
+	    int mode=scan.nextInt();	//Setting the mode
+	    System.out.println("Type cell size(between 1-100) Lower cell size means greater grid");
+	    int cellsize =scan.nextInt(); //Setting the cellsize in pixels
+		int horizontalsize = width/cellsize; //Calculating total number of cells in horizontal
+		int verticalsize = height/cellsize; //Calculating total number of cells in vertical
+	    System.out.println("Type speed in miliseconds(1000 ms is 1 second");
+	    int speed =scan.nextInt();	//Defining speed for every iteration
+	    int gridarray[][]= new int [width/cellsize][height/cellsize]; //This array will keep cell data - alive 1 or dead 0
+	    int nextgridarray[][]= new int [width/cellsize][height/cellsize]; //This array will keep cell data of next iteration
+	    int[] floors = new int [width/cellsize]; //This array contains the multiplies of cellsize in pixels.This is necessary for
+	    int floor=0;							
+		  for(int x=0; x<width/cellsize; x++) {
+			  floors[x]=floor;					
+			  floor=floor+cellsize;}
+	  	  
+		  for(int x=0; x<width/cellsize; x++) {
+			  for(int y=0; y<height/cellsize; y++) {	//Firstly,defining all cells dead,to avoid any conflicts
+				  
+				gridarray[x][y]=0;
+			  }
+		  }
+
+		    
+		    if(cellsize>1){
+			  for(int x=0; x<width; x=x+cellsize) {
+				  for(int y=0; y<height; y++) {
+					  									//If cell size is greater than one pixel,we will have gridlines,1px
+					  image.setRGB(x, y, white);		//white gridlines,this loop is for vertical gridlines
+				  }
+			  }
+			  
+			  for(int y=0; y<height; y=y+cellsize) {
+				  for(int x=0; x<width; x++) {			//This loop is for horizontal gridlines
+					  image.setRGB(x, y, white);
+				  }
+			  }
+			  
+		}
+		  
+			  SwingUtilities.updateComponentTreeUI(field); //This is for updating the field to see the changes
+		  
+		  if(mode==1) { //Mode 1 is draw mode
+			  	
+			 	frame.setExtendedState(JFrame.MAXIMIZED_BOTH); 
+			 
+		 		frame.setVisible(true); //Since it's a draw mode we firstly set our frame visible
+		 		
+			  field.addMouseListener(new MouseAdapter() { //Then we add a mouse listener to our JLabel field,which contains all
+				  											//the stuff we have,like our image
+				  
+				  @Override
+				  
+				   public void mousePressed(MouseEvent e) { //Everytime a mouse is pressed
+					  
+				Point z=MouseInfo.getPointerInfo().getLocation();
+				int mousex=(int) z.getX();	//we get x (vertical) location of the mouse
+				int mousey=(int) z.getY(); //we get y (horizontal) location of the mouse
+			     int x1=mousex/cellsize;	//x location of the mouseclick is just a number.So we have to divide it in to cellsize
+			     //to understand which cell does user clicked.This might be hard to understand at first,you can take a look at
+			     //the explanation part in the github to understand it
+			     int y1=mousey/cellsize; 	  //This is the same,just for vertical position   
+			     int dh=x1*cellsize; //dh stands for determined horizontal,and it means starting point for painting the cell
+			     int dv=y1*cellsize; //dv stands for determined vertical,and it is the same as above
+			     
+					 if(gridarray[x1][y1]==0) { //So,if user's clicked area is zero,which means dead
+					  gridarray[x1][y1]=1;	//We make it alive,by assingning it value 1
+					  
+					     for(int x=dh+1; x<dh+cellsize; x++) { //+1 stands for avoiding grid lines
+					    	 											//And starting from cell's most northwest position
+							   for(int y=dv+1; y<dv+cellsize; y++) {	//we color it to white,which means alive cell
+								   								
+								   
+									  image.setRGB(x, y, white);
+									     }
+							    	 
+							     }
+					     }else {	//So if user's clicked cell is other than 0,which can only be 1,which means cell is alive
+					    	 		//we assign value 0 to that cell,since if user is clicked on an alive cell means user wants
+					    	 		//to make it dead again
+					   gridarray[x1][y1]=0;
+
+					     for(int x=dh+1; x<dh+cellsize; x++) {	//Same as above,just painting to black since it's a dead cell
+						   for(int y=dv+1; y<dv+cellsize; y++) {
+						    		  
+								  image.setRGB(x, y, black);
+								     }
+						    	 
+						     }
+					     }		    
+					 SwingUtilities.updateComponentTreeUI(field); //Everytime mouseclick happens we update the components inside
+					 												//our field
+					
+				System.out.println("Type 1 when you are done"); //And we prompt user can click 1 if he is done
+				}
+				   
+				});
+
+			  int done = scan.nextInt();
+		     if(done==1) {	//So when user finishes his installation,we can go to the iteration part.
+		    	
+		 	 frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		   
+		     iterations(height,width,cellsize,gridarray,nextgridarray,
+		    		 floors,image,frame,field,white,black,speed);
+		     //We sent iteration method all the thing it has to operate.Cell data is kept in the gridarray.
+		     //Next grid array is empty for now
+		  }
+		  }
+		  if(mode==0){//If the user chooses random mode,here it's more simple to understand
+	
+		  System.out.println("Type number of live cells (At most "+horizontalsize*verticalsize+")");
+		  //We want user to define how much alive cell he wants
+		  
+		int startcell =scan.nextInt();
+	    for(int s=0; s<startcell;) { //This loop assigns 1 value to the randomly places in gridarray
+	   
+	    int rh=ThreadLocalRandom.current().nextInt(0, width/cellsize-1); //random height
+	    int rv=ThreadLocalRandom.current().nextInt(0, height/cellsize-1);//random width
+	    if(gridarray[rh][rv]==0){ 
+	    			
+	    			gridarray[rh][rv]=1;
+	    			s++;	
+	    		
+	    		}		
+	    		
+	      }
+	      		frame.setExtendedState(JFrame.MAXIMIZED_BOTH); //After it's done we can set our frame visible
+	  			frame.setVisible(true);
+	  		
+			try {
+				Thread.sleep(1000); //And wait for a one second for user to see starting configuration
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//Then we go to the iterations,with the all information we need to iterate.
+			iterations(height,width,cellsize,gridarray,nextgridarray,floors,image,frame,field,white,black,speed);
+	}
+		  }
+	public static void iterations(int height, int width, int cellsize, int[][] gridarray, int[][] nextgridarray, 
+	int[] floors, BufferedImage image, 
+	JFrame frame, JLabel field,int white, int black,int speed) {
+	//This method is responsible for applying rules of game of life
+	boolean stop=true;
+    while(stop==true) { 
+    	
+	for(int y=1; y<height/cellsize-1; y++) { //we start counting from upper left cell
+	for(int x=1; x<width/cellsize-1; x++) { // and we go by next cell to it one by one
+	int livecounter=0; //integer keeps live neighbour cell data
+	int dh=floors[x];	//This is for finding the exact horizontal location of dead or alive cell for painting
+	int dv=floors[y];	//Same but vertical
+
+	if (gridarray[x-1][y-1]==1) { //Upper left neighbour
+		livecounter++;
+					}
+	if (gridarray[x-1][y]==1) {	//Upper neighbour
+		livecounter++;
+						
+					}
+	if (gridarray[x-1][y+1]==1) {//Upper right neighbour	
+		livecounter++;
+						
+					}
+				
+	if (gridarray[x][y-1]==1) { //Left neighbour
+		livecounter++;
+						
+					}	
+	if (gridarray[x][y+1]==1) { //  Right neighbour
+		livecounter++;
+						
+					}
+	if (gridarray[x+1][y-1]==1) { //Lower left neighbour
+		livecounter++;
+						
+					}
+	if (gridarray[x+1][y]==1) { // Lower neighbour
+		livecounter++;
+						
+					}
+	if (gridarray[x+1][y+1]==1) { //Lower right neighbour
+		livecounter++;
+						
+					}
+	
+	if(gridarray[x][y]==1) { //If the cell is alive
+	if(livecounter<2) {	//And it has less than two neighbours
+		nextgridarray[x][y]=0; //The cell will be dead
+				
+		for(int h=dh+1; h<dh+cellsize; h++) {	//Remember floors,dh and hv stands for exact location for begin painting
+			//+1 is for avoiding gridlines
+			//dh means determined horizontal and dv means determined vertical
+			   for(int v=dv+1; v<dv+cellsize; v++) { //we paint big as cellsize 
+
+			    			
+			   image.setRGB(h, v, black); 
+
+			    		
+			    			}
+			    		}
+						
+					} 
+	if(livecounter==3 || livecounter==2) { //if the cell has two or three alive neighbours
+		nextgridarray[x][y]=1; //remains alive
+		for(int h=dh+1; h<dh+cellsize; h++) {
+				    		
+			   for(int v=dv+1; v<dv+cellsize; v++) {
+
+			    			
+			   image.setRGB(h, v, white);
+
+			    		
+			    			}
+			    		}
+						
+					}
+				
+	if(livecounter>3) { //if the cell has more than three neighbours
+		nextgridarray[x][y]=0;	//the cell will be dead
+		for(int h=dh+1; h<dh+cellsize; h++) {
+				    		
+			   for(int v=dv+1; v<dv+cellsize; v++) {
+
+			    				
+			   image.setRGB(h, v, black);
+
+			    		
+			    			}
+			    		}
+				
+						
+					}
+					
+			}
+	if(gridarray[x][y]==0) { //if the cell is dead
+		if(livecounter==3) {	//But it has exactly three neighbours
+			nextgridarray[x][y]=1; //The cell will be alive
+			
+			for(int h=dh+1; h<dh+cellsize; h++) { 			    		
+				   for(int v=dv+1; v<dv+cellsize; v++) {
+					   image.setRGB(h, v, white);	
+				    			}
+				    		}
+
+						}
+
+					}
+
+				
+			}
+		
+			
+		}
+	
+		SwingUtilities.updateComponentTreeUI(field); //Refreshing visual components to see changes
+		
+		try {
+			Thread.sleep(speed);	//Waiting for the next iteration
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}				
+		boolean death=true; //This is for checking if iteration is dead
+		
+		for(int x=0; x<width/cellsize; x++) { 
+			   
+			   for(int y=0; y<height/cellsize; y++) {
+				   
+				   if(gridarray[x][y]!=nextgridarray[x][y]) { //Even one of the cell is different relative to  the last iteration
+					   death=false; //There is no dead loop,new things are happening
+					   break; //No need to check other cells so ending the loop
+				   }
+			
+				   
+			   }
+			   
+		   }
+		if(death==true) { //If there is death
+	
+			System.out.println("No sign of life"); //Prompt 
+			try {
+				Thread.sleep(2000); //Wait for 2 sec
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			frame.dispose();
+			 main(null); //Start program again
+			
+		}	
+		for(int x=0; x<width/cellsize; x++) {//This is for assigning values of current array to the next array
+			
+			for(int y=0; y<height/cellsize; y++) {
+				
+				
+				gridarray[x][y]=nextgridarray[x][y];
+				
+			}	
+		}
+			
+	    	}
+	}
+	}
